@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 
 import jwt
@@ -5,11 +6,13 @@ from flask import Blueprint, current_app, jsonify, request
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from app.models import User
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from app.models import User,db
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
+
+# Regex patterns
+EMAIL_REGEX = re.compile(r"^[\w\.-]+@[\w\.-]+\.\w+$")
+# Password: min 8 chars, at least 1 uppercase, 1 lowercase, 1 digit, 1 special char
+PASSWORD_REGEX = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$")
 
 
 def _generate_access_token(user: User) -> str:
@@ -35,8 +38,15 @@ def signup():
     if not email or not password:
         return jsonify({"error": "Email and password are required."}), 400
 
-    if len(password) < 8:
-        return jsonify({"error": "Password must be at least 8 characters long."}), 400
+    if not EMAIL_REGEX.match(email):
+        return jsonify({"error": "Invalid email format."}), 400
+
+    if not PASSWORD_REGEX.match(password):
+        return jsonify({
+            "error": ("Password must be at least 8 characters long, "
+                      "contain uppercase and lowercase letters, "
+                      "a number, and a special character.")
+        }), 400
 
     user = User(email=email, password_hash=generate_password_hash(password))
     db.session.add(user)
@@ -61,6 +71,9 @@ def login():
     if not email or not password:
         return jsonify({"error": "Email and password are required."}), 400
 
+    if not EMAIL_REGEX.match(email):
+        return jsonify({"error": "Invalid email format."}), 400
+
     user = User.query.filter_by(email=email).first()
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({"error": "Invalid email or password."}), 401
@@ -76,4 +89,3 @@ def login():
     token = _generate_access_token(user)
 
     return jsonify({"user": user.to_dict(), "token": token}), 200
-

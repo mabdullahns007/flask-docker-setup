@@ -1,9 +1,0 @@
-encryption algorithm 
-Const file 
-user name space
-migration file
-alembic library
-Silent = true
-Prefix
-Add versions requirements
-Integrity error reasons for error

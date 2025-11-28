@@ -3,7 +3,9 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 
-from app.models import db
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 
 def create_app():
