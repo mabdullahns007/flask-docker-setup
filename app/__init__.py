@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-from app.constants import (
+
+from app.config import (
     DATABASE_URI_ENV,
     DEFAULT_DATABASE_URI,
     DEFAULT_JWT_EXPIRATION_MINUTES,

@@ -5,27 +5,41 @@ from flask import Blueprint, current_app, jsonify, request
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from app.constants import (
-    EMAIL_REGEX,
-    PASSWORD_REGEX,
-    PASSWORD_REQUIREMENTS_MESSAGE,
-)
+
 from app.models import User
 from app import db
+from app.routes.constants import (
+    EMAIL_PASSWORD_REQUIRED_ERROR,
+    INVALID_EMAIL_FORMAT_ERROR,
+    EMAIL_ALREADY_REGISTERED_ERROR,
+    INVALID_EMAIL_OR_PASSWORD_ERROR,
+    LOGIN_COMPLETION_ERROR,
+    JWT_EXPIRATION_MINUTES_CONFIG_KEY,
+    JWT_SECRET_KEY_CONFIG_KEY,
+    JWT_DEFAULT_EXPIRATION_MINUTES,
+    JWT_ALGORITHM,
+    JWT_SUBJECT_KEY,
+    JWT_EMAIL_KEY,
+    JWT_ISSUED_AT_KEY,
+    JWT_EXPIRATION_KEY,
+    EMAIL_REGEX,
+    PASSWORD_REGEX,
+    PASSWORD_REQUIREMENTS_MESSAGE
+)
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
 def _generate_access_token(user: User) -> str:
     issued_at = datetime.utcnow()
-    expires_in_minutes = current_app.config.get("JWT_EXPIRATION_MINUTES", 60)
+    expires_in_minutes = current_app.config.get(JWT_EXPIRATION_MINUTES_CONFIG_KEY, JWT_DEFAULT_EXPIRATION_MINUTES)
     payload = {
-        "sub": str(user.id),
-        "email": user.email,
-        "iat": issued_at,
-        "exp": issued_at + timedelta(minutes=expires_in_minutes),
+        JWT_SUBJECT_KEY: str(user.id),
+        JWT_EMAIL_KEY: user.email,
+        JWT_ISSUED_AT_KEY: issued_at,
+        JWT_EXPIRATION_KEY: issued_at + timedelta(minutes=expires_in_minutes),
     }
 
-    token = jwt.encode(payload, current_app.config["JWT_SECRET_KEY"], algorithm="HS256")
+    token = jwt.encode(payload, current_app.config[JWT_SECRET_KEY_CONFIG_KEY], algorithm=JWT_ALGORITHM)
     return token
 
 
@@ -36,10 +50,10 @@ def signup():
     password = data.get("password")
 
     if not email or not password:
-        return jsonify({"error": "Email and password are required."}), 400
+        return jsonify({"error": EMAIL_PASSWORD_REQUIRED_ERROR}), 400
 
     if not EMAIL_REGEX.match(email):
-        return jsonify({"error": "Invalid email format."}), 400
+        return jsonify({"error": INVALID_EMAIL_FORMAT_ERROR}), 400
 
     if not PASSWORD_REGEX.match(password):
         return jsonify({"error": PASSWORD_REQUIREMENTS_MESSAGE}), 400
@@ -51,7 +65,7 @@ def signup():
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        return jsonify({"error": "Email is already registered."}), 409
+        return jsonify({"error": EMAIL_ALREADY_REGISTERED_ERROR}), 409
 
     token = _generate_access_token(user)
 
@@ -65,14 +79,14 @@ def login():
     password = data.get("password")
 
     if not email or not password:
-        return jsonify({"error": "Email and password are required."}), 400
+        return jsonify({"error": EMAIL_PASSWORD_REQUIRED_ERROR}), 400
 
     if not EMAIL_REGEX.match(email):
-        return jsonify({"error": "Invalid email format."}), 400
+        return jsonify({"error": INVALID_EMAIL_FORMAT_ERROR}), 400
 
     user = User.query.filter_by(email=email).first()
     if not user or not check_password_hash(user.password_hash, password):
-        return jsonify({"error": "Invalid email or password."}), 401
+        return jsonify({"error": INVALID_EMAIL_OR_PASSWORD_ERROR}), 401
 
     user.last_login_at = datetime.utcnow()
 
@@ -80,7 +94,7 @@ def login():
         db.session.commit()
     except Exception:
         db.session.rollback()
-        return jsonify({"error": "Unable to complete login at this time."}), 500
+        return jsonify({"error": LOGIN_COMPLETION_ERROR}), 500
 
     token = _generate_access_token(user)
 
