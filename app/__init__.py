@@ -2,11 +2,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from app.constants import (
-    DEFAULT_DATABASE_URI,
-    DEFAULT_JWT_EXPIRATION_MINUTES,
-    DEFAULT_SECRET_KEY,
-)
+from app.constants import (DEFAULT_DATABASE_URI,DEFAULT_JWT_EXPIRATION_MINUTES,DEFAULT_SECRET_KEY)
 
 db = SQLAlchemy()
 
