@@ -8,6 +8,7 @@ class User(db.Model):
     PASSWORD_HASH_KEY = "password_hash"
     CREATED_AT_KEY = "created_at"
     LAST_LOGIN_AT_KEY = "last_login_at"
+    
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
