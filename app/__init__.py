@@ -25,8 +25,27 @@ def create_app():
         )
     except ValueError:
         expiration_minutes = DEFAULT_JWT_EXPIRATION_MINUTES
+    app.config.from_mapping(
+        CELERY=dict(
+            broker_url="redis://redis:6379/0",
+            result_backend="redis://redis:6379/0",
+            task_ignore_result=True,
+            beat_schedule={
+                "daily-data-sync": {
+                    "task": "data_sync_task",
+                    "schedule": 86400.0, # Daily (every 24 hours) or use crontab in real app
+                }
+            }
+        ),
+    )
     app.config["JWT_EXPIRATION_MINUTES"] = expiration_minutes
     db.init_app(app)
+    
+    from app.celery_utils import celery_init_app
+    celery_init_app(app)
+    
+    # Import tasks to ensure they are registered
+    from app import tasks
 
     from app.routes.auth import auth_bp
 
