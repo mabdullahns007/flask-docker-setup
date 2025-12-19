@@ -4,6 +4,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from app.constants import (DEFAULT_DATABASE_URI,DEFAULT_JWT_EXPIRATION_MINUTES,DEFAULT_SECRET_KEY)
 
+
 db = SQLAlchemy()
 
 
@@ -25,8 +26,15 @@ def create_app():
         )
     except ValueError:
         expiration_minutes = DEFAULT_JWT_EXPIRATION_MINUTES
+
     app.config["JWT_EXPIRATION_MINUTES"] = expiration_minutes
     db.init_app(app)
+    
+    from app.celery_app import celery_init_app
+    celery_init_app(app)
+    
+    # Import tasks to ensure they are registered
+    from app import tasks
 
     from app.routes.auth import auth_bp
 
