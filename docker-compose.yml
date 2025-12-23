@@ -27,6 +27,7 @@ services:
     ports:
       - "6379:6379"
 
+<<<<<<< HEAD
   celery_worker:
     build: .
     command: celery -A make_celery worker --loglevel=info
@@ -48,4 +49,27 @@ services:
       - db
     volumes:
       - .:/app
+=======
+  worker:
+    build: .
+    command: celery -A celery_app.celery_app worker --loglevel INFO
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+
+  beat:
+    build: .
+    command: celery -A celery_app.celery_app beat --loglevel INFO
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+>>>>>>> 6cec868 (Migrations for new Models, Celery Integration)
 
