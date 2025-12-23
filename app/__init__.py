@@ -2,10 +2,12 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from app.constants import (DEFAULT_DATABASE_URI,DEFAULT_JWT_EXPIRATION_MINUTES,DEFAULT_SECRET_KEY)
 
 
 db = SQLAlchemy()
+migrate = Migrate()
 
 
 def create_app(): 
@@ -29,14 +31,16 @@ def create_app():
 
     app.config["JWT_EXPIRATION_MINUTES"] = expiration_minutes
     db.init_app(app)
-    
+    migrate.init_app(app, db)
     from app.celery_app import celery_init_app
     celery_init_app(app)
     
     # Import tasks to ensure they are registered
     from app import tasks
 
+
     from app.routes.auth import auth_bp
+    from app.models import User, CarMake, CarModel, CarYear
 
     app.register_blueprint(auth_bp)
 
