@@ -7,3 +7,4 @@ PyJWT==2.10.1
 alembic==1.14.0
 Flask-Migrate==4.1.0
 celery==5.4.0
+requests==2.32.3

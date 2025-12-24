@@ -3,7 +3,6 @@ from app import db
 from sqlalchemy import UniqueConstraint
 
 
-
 class CarMake(db.Model):
     __tablename__ = "car_makes"
 
@@ -54,8 +53,6 @@ class CarModel(db.Model):
             self.NAME_KEY: self.name,
             self.MAKE_ID_KEY: self.make_id,
         }  
-    
-
 
 class CarYear(db.Model):
     __tablename__ = "car_years"

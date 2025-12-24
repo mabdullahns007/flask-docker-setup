@@ -17,10 +17,12 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     last_login_at = db.Column(db.DateTime)
+
     def __init__(self, email: str, password_hash: str, last_login_at=None):
         self.email = email
         self.password_hash = password_hash
         self.last_login_at = last_login_at
+        
     def to_dict(self):
         return {
             self.ID_KEY: self.id,

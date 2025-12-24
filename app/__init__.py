@@ -5,9 +5,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from app.constants import (DEFAULT_DATABASE_URI,DEFAULT_JWT_EXPIRATION_MINUTES,DEFAULT_SECRET_KEY)
 
+
 db = SQLAlchemy()
 migrate = Migrate()
-
 
 def create_app(): 
     load_dotenv()
@@ -40,4 +40,3 @@ def create_app():
     app.register_blueprint(auth_bp)
 
     return app
-
