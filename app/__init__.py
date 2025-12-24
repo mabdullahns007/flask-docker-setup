@@ -9,7 +9,6 @@ from app.constants import (DEFAULT_DATABASE_URI,DEFAULT_JWT_EXPIRATION_MINUTES,D
 db = SQLAlchemy()
 migrate = Migrate()
 
-
 def create_app(): 
     load_dotenv()
     app = Flask(__name__)
@@ -45,4 +44,3 @@ def create_app():
     app.register_blueprint(auth_bp)
 
     return app
-
