@@ -27,3 +27,25 @@ services:
     ports:
       - "6379:6379"
 
+  worker:
+    build: .
+    command: celery -A celery_app.celery_app worker --loglevel INFO
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+
+  beat:
+    build: .
+    command: celery -A celery_app.celery_app beat --loglevel INFO
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+
