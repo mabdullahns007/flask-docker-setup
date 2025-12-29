@@ -5,6 +5,7 @@ from datetime import timedelta
 import requests
 from app import db
 from app.models.car import CarMake, CarModel, CarYear
+from app.constants import URL
 
 
 def celery_init_app(app) -> Celery:
@@ -35,14 +36,13 @@ celery_app = flask_app.extensions["celery"]
 
 @celery_app.task(name="data_sync_task")
 def carDataSync():
-    url = 'https://parseapi.back4app.com/classes/Car_Model_List?limit=10&excludeKeys=Category'
     headers = {
-        'X-Parse-Application-Id': 'hlhoNKjOvEhqzcVAJ1lxjicJLZNVv36GdbboZj3Z',
-        'X-Parse-Master-Key': 'SNMJJF0CZZhTPhLDIqGhTlUNV9r60M2Z5spyWfXW'
+        'X-Parse-Application-Id': os.getenv('PARSE_APPLICATION_ID'),
+        'X-Parse-Master-Key': os.getenv('PARSE_MASTER_KEY')
     }
     
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(URL, headers=headers)
         response.raise_for_status()
         data = response.json()
         results = data.get("results", [])
