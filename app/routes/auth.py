@@ -5,9 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 from app.models import User
 from app import db
-from app.routes.constants import (
-    EMAIL_PASSWORD_REQUIRED_ERROR,INVALID_EMAIL_FORMAT_ERROR,EMAIL_ALREADY_REGISTERED_ERROR,INVALID_EMAIL_OR_PASSWORD_ERROR,LOGIN_COMPLETION_ERROR,JWT_EXPIRATION_MINUTES_CONFIG_KEY,JWT_SECRET_KEY_CONFIG_KEY,JWT_DEFAULT_EXPIRATION_MINUTES,JWT_ALGORITHM,JWT_SUBJECT_KEY,JWT_EMAIL_KEY,JWT_ISSUED_AT_KEY,JWT_EXPIRATION_KEY,EMAIL_REGEX,PASSWORD_REGEX,PASSWORD_REQUIREMENTS_MESSAGE
-)
+from app.routes.constants import (EMAIL_PASSWORD_REQUIRED_ERROR,INVALID_EMAIL_FORMAT_ERROR,EMAIL_ALREADY_REGISTERED_ERROR,INVALID_EMAIL_OR_PASSWORD_ERROR,LOGIN_COMPLETION_ERROR,JWT_EXPIRATION_MINUTES_CONFIG_KEY,JWT_SECRET_KEY_CONFIG_KEY,JWT_DEFAULT_EXPIRATION_MINUTES,JWT_ALGORITHM,JWT_SUBJECT_KEY,JWT_EMAIL_KEY,JWT_ISSUED_AT_KEY,JWT_EXPIRATION_KEY,EMAIL_REGEX,PASSWORD_REGEX,PASSWORD_REQUIREMENTS_MESSAGE)
 
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -45,7 +43,6 @@ def signup():
     except IntegrityError:
         db.session.rollback()
         return jsonify({"error": EMAIL_ALREADY_REGISTERED_ERROR}), 409
-
     token = _generate_access_token(user)
     return jsonify({"user": user.to_dict(), "token": token}), 201
 
@@ -56,8 +53,10 @@ def login():
     password = data.get("password")
     if not email or not password:
         return jsonify({"error": EMAIL_PASSWORD_REQUIRED_ERROR}), 400
+
     if not EMAIL_REGEX.match(email):
         return jsonify({"error": INVALID_EMAIL_FORMAT_ERROR}), 400
+
     user = User.query.filter_by(email=email).first()
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({"error": INVALID_EMAIL_OR_PASSWORD_ERROR}), 401
@@ -67,4 +66,5 @@ def login():
     except Exception:
         db.session.rollback()
         return jsonify({"error": LOGIN_COMPLETION_ERROR}), 500
+    token = _generate_access_token(user)
     return jsonify({"user": user.to_dict(), "token": token}), 200
