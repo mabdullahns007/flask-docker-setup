@@ -1,13 +1,14 @@
 from flask import Blueprint, jsonify, request
 from app.models import CarMake, CarModel, CarYear
-from app import db
+from app import db, ma
 from sqlalchemy.exc import IntegrityError
+from app.schemas.car import car_make_schema, car_makes_schema
 
 
 car_bp = Blueprint("car", __name__, url_prefix="/cars")
 
 @car_bp.route("/makes", methods=["GET"])
-def get_makes():
+def list_makes():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
     pagination = CarMake.query.paginate(page=page, per_page=per_page, error_out=False)
@@ -25,10 +26,13 @@ def get_makes():
 @car_bp.route("/makes", methods=["POST"])
 def create_make():
     data = request.get_json(silent=True) or {}
-    name = data.get("name")
-    if not name:
-        return jsonify({"error": "Name is required"}), 400
     
+    # Use Marshmallow to load and validate data
+    errors = car_make_schema.validate(data)
+    if errors:
+        return jsonify(errors), 400
+    
+    name = data.get("name")
     make = CarMake(name=name)
     db.session.add(make)
     try:
@@ -36,7 +40,8 @@ def create_make():
     except IntegrityError:
         db.session.rollback()
         return jsonify({"error": "Make already exists"}), 409
-    return jsonify(make.to_dict()), 201
+    
+    return car_make_schema.jsonify(make), 201
 
 @car_bp.route("/makes/<int:make_id>", methods=["GET"])
 def get_make(make_id):
