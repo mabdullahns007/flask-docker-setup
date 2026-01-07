@@ -3,11 +3,13 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_marshmallow import Marshmallow
 from app.constants import (DEFAULT_DATABASE_URI,DEFAULT_JWT_EXPIRATION_MINUTES,DEFAULT_SECRET_KEY)
 
 
 db = SQLAlchemy()
 migrate = Migrate()
+ma = Marshmallow()
 
 def create_app(): 
     load_dotenv()
@@ -30,6 +32,7 @@ def create_app():
     app.config["JWT_EXPIRATION_MINUTES"] = expiration_minutes
     db.init_app(app)
     migrate.init_app(app, db)
+    ma.init_app(app)
 
     from celery_app import celery_init_app
     celery_init_app(app)
