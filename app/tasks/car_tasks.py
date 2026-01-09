@@ -51,7 +51,7 @@ def carDataSync():
             synced_count += 1
             
         db.session.commit()
-        return f"Successfully synced {synced_count} records."
+        print(f"Synced {synced_count} records.")    
         
     except Exception as e:
         db.session.rollback()

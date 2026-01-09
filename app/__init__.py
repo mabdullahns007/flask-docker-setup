@@ -1,4 +1,5 @@
 import os
+import time
 from dotenv import load_dotenv
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -44,4 +45,35 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(car_bp)
 
+    with app.app_context():
+        from flask_migrate import upgrade
+        from sqlalchemy import text
+        
+        max_retries = 60  # Increased retries
+        retry_interval = 2  # Check every 2 seconds
+        
+        print("Waiting for database to be ready...")
+        for attempt in range(max_retries):
+            try:
+                # Test database connection with a simple query
+                with db.engine.connect() as connection:
+                    connection.execute(text("SELECT 1"))
+                    connection.commit()
+                
+                print(f"✓ Database connected successfully on attempt {attempt + 1}")
+                
+                # Apply migrations
+                print("Applying database migrations...")
+                upgrade()
+                print("✓ Database migrations applied successfully!")
+                break
+                
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    print(f"⏳ Attempt {attempt + 1}/{max_retries}: Database not ready yet, retrying in {retry_interval}s...")
+                    time.sleep(retry_interval)
+                else:
+                    print(f"✗ Failed to connect to database after {max_retries} attempts")
+                    print(f"✗ Last error: {e}")
+                    raise
     return app
