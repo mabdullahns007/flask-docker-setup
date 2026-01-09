@@ -5,8 +5,17 @@ services:
     build: .
     ports:
       - "5000:5000"
-    env_file:
-      - .env
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - SECRET_KEY=${SECRET_KEY:-supersecretkey}
+      - MYSQL_USER=${MYSQL_USER:-root}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-rootpassword}
+      - MYSQL_DB=${MYSQL_DB:-flaskdb}
+      - MYSQL_HOST=${MYSQL_HOST:-db}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - DATABASE_URI=${DATABASE_URI:-mysql://root:rootpassword@db:3306/flaskdb}
+      - PARSE_APPLICATION_ID=${PARSE_APPLICATION_ID:-hlhoNKjOvEhqzcVAJ1lxjicJLZNVv36GdbboZj3Z}
+      - PARSE_MASTER_KEY=${PARSE_MASTER_KEY:-SNMJJF0CZZhTPhLDIqGhTlUNV9r60M2Z5spyWfXW}
     depends_on:
       - db
       - redis
@@ -17,8 +26,8 @@ services:
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: flaskdb
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD:-rootpassword}
+      - MYSQL_DATABASE=${MYSQL_DB:-flaskdb}
     ports:
       - "3306:3306"
 
@@ -30,8 +39,17 @@ services:
   worker:
     build: .
     command: celery -A celery_app.celery_app worker --loglevel INFO
-    env_file:
-      - .env
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - SECRET_KEY=${SECRET_KEY:-supersecretkey}
+      - MYSQL_USER=${MYSQL_USER:-root}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-rootpassword}
+      - MYSQL_DB=${MYSQL_DB:-flaskdb}
+      - MYSQL_HOST=${MYSQL_HOST:-db}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - DATABASE_URI=${DATABASE_URI:-mysql://root:rootpassword@db:3306/flaskdb}
+      - PARSE_APPLICATION_ID=${PARSE_APPLICATION_ID:-hlhoNKjOvEhqzcVAJ1lxjicJLZNVv36GdbboZj3Z}
+      - PARSE_MASTER_KEY=${PARSE_MASTER_KEY:-SNMJJF0CZZhTPhLDIqGhTlUNV9r60M2Z5spyWfXW}
     volumes:
       - .:/app
     depends_on:
@@ -41,8 +59,17 @@ services:
   beat:
     build: .
     command: celery -A celery_app.celery_app beat --loglevel INFO
-    env_file:
-      - .env
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - SECRET_KEY=${SECRET_KEY:-supersecretkey}
+      - MYSQL_USER=${MYSQL_USER:-root}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-rootpassword}
+      - MYSQL_DB=${MYSQL_DB:-flaskdb}
+      - MYSQL_HOST=${MYSQL_HOST:-db}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - DATABASE_URI=${DATABASE_URI:-mysql://root:rootpassword@db:3306/flaskdb}
+      - PARSE_APPLICATION_ID=${PARSE_APPLICATION_ID:-hlhoNKjOvEhqzcVAJ1lxjicJLZNVv36GdbboZj3Z}
+      - PARSE_MASTER_KEY=${PARSE_MASTER_KEY:-SNMJJF0CZZhTPhLDIqGhTlUNV9r60M2Z5spyWfXW}
     volumes:
       - .:/app
     depends_on:

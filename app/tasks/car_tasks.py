@@ -7,10 +7,7 @@ from celery_app import celery_app
 
 @celery_app.task(name="data_sync_task")
 def carDataSync():
-    headers = {
-        'X-Parse-Application-Id': os.getenv('PARSE_APPLICATION_ID'),
-        'X-Parse-Master-Key': os.getenv('PARSE_MASTER_KEY')
-    }
+    headers = {'X-Parse-Application-Id': os.getenv('PARSE_APPLICATION_ID'),'X-Parse-Master-Key': os.getenv('PARSE_MASTER_KEY')}
     
     try:
         response = requests.get(URL, headers=headers)
@@ -51,7 +48,7 @@ def carDataSync():
             synced_count += 1
             
         db.session.commit()
-        return f"Successfully synced {synced_count} records."
+        print(f"Synced {synced_count} records.")    
         
     except Exception as e:
         db.session.rollback()
