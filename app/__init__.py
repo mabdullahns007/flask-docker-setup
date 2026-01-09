@@ -13,23 +13,20 @@ migrate = Migrate()
 ma = Marshmallow()
 
 def create_app(): 
+    
     load_dotenv()
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", DEFAULT_SECRET_KEY)
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-        "DATABASE_URI", DEFAULT_DATABASE_URI
-    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI", DEFAULT_DATABASE_URI)
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["JWT_SECRET_KEY"] = os.getenv(
-        "JWT_SECRET_KEY", app.config["SECRET_KEY"]
-    )
+    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", app.config["SECRET_KEY"])
     expiration_env = os.getenv("JWT_EXPIRATION_MINUTES")
+
     try:
-        expiration_minutes = (
-            int(expiration_env) if expiration_env else DEFAULT_JWT_EXPIRATION_MINUTES
-        )
+        expiration_minutes = (int(expiration_env) if expiration_env else DEFAULT_JWT_EXPIRATION_MINUTES)
     except ValueError:
         expiration_minutes = DEFAULT_JWT_EXPIRATION_MINUTES
+
     app.config["JWT_EXPIRATION_MINUTES"] = expiration_minutes
     db.init_app(app)
     migrate.init_app(app, db)
@@ -38,8 +35,8 @@ def create_app():
     from celery_app import celery_init_app
     celery_init_app(app)
 
-    from app.routes.auth import auth_bp
-    from app.routes.car import car_bp
+    from app.auth.apis import auth_bp
+    from app.car.apis import car_bp
     from app.models import User, CarMake, CarModel, CarYear
 
     app.register_blueprint(auth_bp)
@@ -49,20 +46,18 @@ def create_app():
         from flask_migrate import upgrade
         from sqlalchemy import text
         
-        max_retries = 60  # Increased retries
-        retry_interval = 2  # Check every 2 seconds
+        max_retries = 60  
+        retry_interval = 2  
         
         print("Waiting for database to be ready...")
         for attempt in range(max_retries):
             try:
-                # Test database connection with a simple query
                 with db.engine.connect() as connection:
                     connection.execute(text("SELECT 1"))
                     connection.commit()
                 
                 print(f"✓ Database connected successfully on attempt {attempt + 1}")
                 
-                # Apply migrations
                 print("Applying database migrations...")
                 upgrade()
                 print("✓ Database migrations applied successfully!")
