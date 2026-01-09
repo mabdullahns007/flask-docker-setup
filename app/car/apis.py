@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, request
 from app.models import CarMake, CarModel, CarYear
-from app import db, ma
+from app import db
 from sqlalchemy.exc import IntegrityError
-from app.schemas.car import car_make_schema, car_makes_schema
+from app.car.schemas import car_make_schema
 
 
 car_bp = Blueprint("car", __name__, url_prefix="/cars")
