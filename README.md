@@ -8,6 +8,21 @@
    docker-compose up --build
    ```
 
+## Database migrations (Alembic)
+
+This project now uses [Alembic](https://alembic.sqlalchemy.org/) for schema migrations.
+
+1. Ensure `DATABASE_URI` is set (defaults to the local SQLite file).
+2. Apply migrations:
+   ```bash
+   alembic upgrade head
+   ```
+3. Generate new migrations after editing models:
+   ```bash
+   alembic revision --autogenerate -m "describe change"
+   ```
+4. Commit the generated files inside the `migrations/` directory.
+
 ### Environment variables
 
 - `SECRET_KEY` – Flask secret key used for signing session data. Defaults to `dev-secret-key`.
