@@ -4,12 +4,14 @@ from app import db
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import NotFound
 from app.car.schemas import (car_make_schema, car_makes_schema,car_model_schema, car_models_schema,car_year_schema, car_years_schema)
+from app.auth.decorators import token_required
 
 
 car_bp = Blueprint("car", __name__, url_prefix="/cars")
 
 @car_bp.route("/makes", methods=["GET"], strict_slashes=False)
-def list_makes():
+@token_required
+def list_makes(current_user):
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
     pagination = CarMake.query.paginate(page=page, per_page=per_page, error_out=False)
@@ -25,7 +27,8 @@ def list_makes():
     }), 200
 
 @car_bp.route("/makes", methods=["POST"])
-def create_make():
+@token_required
+def create_make(current_user):
     data = request.get_json(silent=True) or {}
     
     # Use Marshmallow to load and validate data
@@ -44,12 +47,14 @@ def create_make():
     return car_make_schema.jsonify(make), 201
 
 @car_bp.route("/makes/<string:make_id>", methods=["GET"])
-def get_make(make_id):
+@token_required
+def get_make(current_user, make_id):
     make = CarMake.query.get_or_404(make_id)
     return car_make_schema.jsonify(make), 200
 
 @car_bp.route("/makes/<string:make_id>", methods=["PUT"])
-def update_make(make_id):
+@token_required
+def update_make(current_user, make_id):
     make = CarMake.query.get_or_404(make_id)
     data = request.get_json(silent=True) or {}
     
@@ -69,14 +74,16 @@ def update_make(make_id):
     return car_make_schema.jsonify(make), 200
 
 @car_bp.route("/makes/<string:make_id>", methods=["DELETE"])
-def delete_make(make_id):
+@token_required
+def delete_make(current_user, make_id):
     make = CarMake.query.get_or_404(make_id)
     db.session.delete(make)
     db.session.commit()
     return jsonify({"message": "Make deleted successfully"}), 200
 
 @car_bp.route("/models", methods=["GET"], strict_slashes=False)
-def get_models():
+@token_required
+def get_models(current_user):
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
     pagination = CarModel.query.paginate(page=page, per_page=per_page, error_out=False)
@@ -92,7 +99,8 @@ def get_models():
     }), 200
 
 @car_bp.route("/models", methods=["POST"])
-def create_model():
+@token_required
+def create_model(current_user):
     data = request.get_json(silent=True) or {}
     
     # Use Marshmallow to load and validate data
@@ -110,12 +118,14 @@ def create_model():
     return car_model_schema.jsonify(model), 201
 
 @car_bp.route("/models/<string:model_id>", methods=["GET"])
-def get_model(model_id):
+@token_required
+def get_model(current_user, model_id):
     model = CarModel.query.get_or_404(model_id)
     return car_model_schema.jsonify(model), 200
 
 @car_bp.route("/models/<string:model_id>", methods=["PUT"])
-def update_model(model_id):
+@token_required
+def update_model(current_user, model_id):
     model = CarModel.query.get_or_404(model_id)
     data = request.get_json(silent=True) or {}
     
@@ -131,7 +141,8 @@ def update_model(model_id):
     return car_model_schema.jsonify(model), 200
 
 @car_bp.route("/models/<string:model_id>", methods=["DELETE"])
-def delete_model(model_id):
+@token_required
+def delete_model(current_user, model_id):
     model = CarModel.query.get_or_404(model_id)
     db.session.delete(model)
     db.session.commit()
@@ -140,7 +151,8 @@ def delete_model(model_id):
 # --- CarYear CRUD ---
 
 @car_bp.route("/years", methods=["GET"], strict_slashes=False)
-def get_years():
+@token_required
+def get_years(current_user):
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
     pagination = CarYear.query.paginate(page=page, per_page=per_page, error_out=False)
@@ -156,7 +168,8 @@ def get_years():
     }), 200
 
 @car_bp.route("/years", methods=["POST"])
-def create_year():
+@token_required
+def create_year(current_user):
     data = request.get_json(silent=True) or {}
     
     # Use Marshmallow to load and validate data
@@ -174,12 +187,14 @@ def create_year():
     return car_year_schema.jsonify(year), 201
 
 @car_bp.route("/years/<string:year_id>", methods=["GET"])
-def get_year(year_id):
+@token_required
+def get_year(current_user, year_id):
     year = CarYear.query.get_or_404(year_id)
     return car_year_schema.jsonify(year), 200
 
 @car_bp.route("/years/<string:year_id>", methods=["PUT"])
-def update_year(year_id):
+@token_required
+def update_year(current_user, year_id):
     year = CarYear.query.get_or_404(year_id)
     data = request.get_json(silent=True) or {}
     
@@ -195,7 +210,8 @@ def update_year(year_id):
     return car_year_schema.jsonify(year), 200
 
 @car_bp.route("/years/<string:year_id>", methods=["DELETE"])
-def delete_year(year_id):
+@token_required
+def delete_year(current_user, year_id):
     year = CarYear.query.get_or_404(year_id)
     db.session.delete(year)
     db.session.commit()
