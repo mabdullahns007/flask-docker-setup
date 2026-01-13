@@ -1,4 +1,5 @@
 from datetime import datetime
+import uuid
 from app import db
 
 
@@ -13,7 +14,7 @@ class User(db.Model):
     LAST_LOGIN_AT_KEY = "last_login_at"
     
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(32), primary_key=True, default=lambda: uuid.uuid4().hex)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)

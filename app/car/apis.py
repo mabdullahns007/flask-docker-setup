@@ -43,12 +43,12 @@ def create_make():
     
     return car_make_schema.jsonify(make), 201
 
-@car_bp.route("/makes/<int:make_id>", methods=["GET"])
+@car_bp.route("/makes/<string:make_id>", methods=["GET"])
 def get_make(make_id):
     make = CarMake.query.get_or_404(make_id)
     return car_make_schema.jsonify(make), 200
 
-@car_bp.route("/makes/<int:make_id>", methods=["PUT"])
+@car_bp.route("/makes/<string:make_id>", methods=["PUT"])
 def update_make(make_id):
     make = CarMake.query.get_or_404(make_id)
     data = request.get_json(silent=True) or {}
@@ -68,7 +68,7 @@ def update_make(make_id):
         return jsonify({"error": "Make name already exists"}), 409
     return car_make_schema.jsonify(make), 200
 
-@car_bp.route("/makes/<int:make_id>", methods=["DELETE"])
+@car_bp.route("/makes/<string:make_id>", methods=["DELETE"])
 def delete_make(make_id):
     make = CarMake.query.get_or_404(make_id)
     db.session.delete(make)
@@ -109,12 +109,12 @@ def create_model():
         return jsonify({"error": "Could not create model"}), 500
     return car_model_schema.jsonify(model), 201
 
-@car_bp.route("/models/<int:model_id>", methods=["GET"])
+@car_bp.route("/models/<string:model_id>", methods=["GET"])
 def get_model(model_id):
     model = CarModel.query.get_or_404(model_id)
     return car_model_schema.jsonify(model), 200
 
-@car_bp.route("/models/<int:model_id>", methods=["PUT"])
+@car_bp.route("/models/<string:model_id>", methods=["PUT"])
 def update_model(model_id):
     model = CarModel.query.get_or_404(model_id)
     data = request.get_json(silent=True) or {}
@@ -130,7 +130,7 @@ def update_model(model_id):
     db.session.commit()
     return car_model_schema.jsonify(model), 200
 
-@car_bp.route("/models/<int:model_id>", methods=["DELETE"])
+@car_bp.route("/models/<string:model_id>", methods=["DELETE"])
 def delete_model(model_id):
     model = CarModel.query.get_or_404(model_id)
     db.session.delete(model)
@@ -173,12 +173,12 @@ def create_year():
         return jsonify({"error": "Year for this model already exists"}), 409
     return car_year_schema.jsonify(year), 201
 
-@car_bp.route("/years/<int:year_id>", methods=["GET"])
+@car_bp.route("/years/<string:year_id>", methods=["GET"])
 def get_year(year_id):
     year = CarYear.query.get_or_404(year_id)
     return car_year_schema.jsonify(year), 200
 
-@car_bp.route("/years/<int:year_id>", methods=["PUT"])
+@car_bp.route("/years/<string:year_id>", methods=["PUT"])
 def update_year(year_id):
     year = CarYear.query.get_or_404(year_id)
     data = request.get_json(silent=True) or {}
@@ -194,7 +194,7 @@ def update_year(year_id):
     db.session.commit()
     return car_year_schema.jsonify(year), 200
 
-@car_bp.route("/years/<int:year_id>", methods=["DELETE"])
+@car_bp.route("/years/<string:year_id>", methods=["DELETE"])
 def delete_year(year_id):
     year = CarYear.query.get_or_404(year_id)
     db.session.delete(year)
