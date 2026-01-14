@@ -44,8 +44,8 @@ def create_app():
     celery_init_app(app)
 >>>>>>> 6cec868 (Migrations for new Models, Celery Integration)
 
-    from app.auth.apis import auth_bp
-    from app.car.apis import car_bp
+    from app.routes.auth.apis import auth_bp
+    from app.routes.car.apis import car_bp
     from app.models import User, CarMake, CarModel, CarYear
 
     app.register_blueprint(auth_bp)

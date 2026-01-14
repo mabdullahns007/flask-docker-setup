@@ -3,38 +3,26 @@ from app.models import CarMake, CarModel, CarYear
 from app import db
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import NotFound
-from app.car.schemas import (car_make_schema, car_makes_schema,car_model_schema, car_models_schema,car_year_schema, car_years_schema)
-from app.auth.decorators import token_required
+from app.routes.car.schemas import (car_make_schema,car_model_schema,car_year_schema)
+from app.routes.car.decorators import token_required, validate_schema, serialize_response, paginate
 
 
 car_bp = Blueprint("car", __name__, url_prefix="/cars")
 
+#Car Make APIs
+
 @car_bp.route("/makes", methods=["GET"], strict_slashes=False)
 @token_required
+@paginate(car_make_schema)
 def list_makes(current_user):
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 10, type=int)
-    pagination = CarMake.query.paginate(page=page, per_page=per_page, error_out=False)
-    
-    return jsonify({
-        "items": car_makes_schema.dump(pagination.items),
-        "total": pagination.total,
-        "pages": pagination.pages,
-        "current_page": pagination.page,
-        "per_page": pagination.per_page,
-        "has_next": pagination.has_next,
-        "has_prev": pagination.has_prev
-    }), 200
+    return CarMake.query
 
 @car_bp.route("/makes", methods=["POST"])
 @token_required
+@validate_schema(car_make_schema)
+@serialize_response(car_make_schema)
 def create_make(current_user):
     data = request.get_json(silent=True) or {}
-    
-    # Use Marshmallow to load and validate data
-    errors = car_make_schema.validate(data)
-    if errors:
-        return jsonify(errors), 400
     
     make = car_make_schema.load(data)
     db.session.add(make)
@@ -42,26 +30,24 @@ def create_make(current_user):
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        return jsonify({"error": "Make already exists"}), 409
+        return {"error": "Make already exists"}, 409
     
-    return car_make_schema.jsonify(make), 201
+    return make, 201
 
 @car_bp.route("/makes/<string:make_id>", methods=["GET"])
 @token_required
+@serialize_response(car_make_schema)
 def get_make(current_user, make_id):
     make = CarMake.query.get_or_404(make_id)
-    return car_make_schema.jsonify(make), 200
+    return make
 
 @car_bp.route("/makes/<string:make_id>", methods=["PUT"])
 @token_required
+@validate_schema(car_make_schema, partial=True)
+@serialize_response(car_make_schema)
 def update_make(current_user, make_id):
     make = CarMake.query.get_or_404(make_id)
     data = request.get_json(silent=True) or {}
-    
-    # Use Marshmallow to load and validate data (partial=True for updates)
-    errors = car_make_schema.validate(data, partial=True)
-    if errors:
-        return jsonify(errors), 400
     
     # Marshmallow load with instance updates the existing object
     make = car_make_schema.load(data, instance=make, partial=True)
@@ -70,8 +56,8 @@ def update_make(current_user, make_id):
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        return jsonify({"error": "Make name already exists"}), 409
-    return car_make_schema.jsonify(make), 200
+        return {"error": "Make name already exists"}, 409
+    return make
 
 @car_bp.route("/makes/<string:make_id>", methods=["DELETE"])
 @token_required
@@ -81,32 +67,20 @@ def delete_make(current_user, make_id):
     db.session.commit()
     return jsonify({"message": "Make deleted successfully"}), 200
 
+#Car Model APIs
+
 @car_bp.route("/models", methods=["GET"], strict_slashes=False)
 @token_required
+@paginate(car_model_schema)
 def get_models(current_user):
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 10, type=int)
-    pagination = CarModel.query.paginate(page=page, per_page=per_page, error_out=False)
-    
-    return jsonify({
-        "items": car_models_schema.dump(pagination.items),
-        "total": pagination.total,
-        "pages": pagination.pages,
-        "current_page": pagination.page,
-        "per_page": pagination.per_page,
-        "has_next": pagination.has_next,
-        "has_prev": pagination.has_prev
-    }), 200
+    return CarModel.query
 
 @car_bp.route("/models", methods=["POST"])
 @token_required
+@validate_schema(car_model_schema)
+@serialize_response(car_model_schema)
 def create_model(current_user):
     data = request.get_json(silent=True) or {}
-    
-    # Use Marshmallow to load and validate data
-    errors = car_model_schema.validate(data)
-    if errors:
-        return jsonify(errors), 400
     
     model = car_model_schema.load(data)
     db.session.add(model)
@@ -114,31 +88,29 @@ def create_model(current_user):
         db.session.commit()
     except Exception:
         db.session.rollback()
-        return jsonify({"error": "Could not create model"}), 500
-    return car_model_schema.jsonify(model), 201
+        return {"error": "Could not create model"}, 500
+    return model, 201
 
 @car_bp.route("/models/<string:model_id>", methods=["GET"])
 @token_required
+@serialize_response(car_model_schema)
 def get_model(current_user, model_id):
     model = CarModel.query.get_or_404(model_id)
-    return car_model_schema.jsonify(model), 200
+    return model
 
 @car_bp.route("/models/<string:model_id>", methods=["PUT"])
 @token_required
+@validate_schema(car_model_schema, partial=True)
+@serialize_response(car_model_schema)
 def update_model(current_user, model_id):
     model = CarModel.query.get_or_404(model_id)
     data = request.get_json(silent=True) or {}
-    
-    # Use Marshmallow to load and validate data (partial=True for updates)
-    errors = car_model_schema.validate(data, partial=True)
-    if errors:
-        return jsonify(errors), 400
     
     # Marshmallow load with instance updates the existing object
     model = car_model_schema.load(data, instance=model, partial=True)
     
     db.session.commit()
-    return car_model_schema.jsonify(model), 200
+    return model
 
 @car_bp.route("/models/<string:model_id>", methods=["DELETE"])
 @token_required
@@ -148,34 +120,20 @@ def delete_model(current_user, model_id):
     db.session.commit()
     return jsonify({"message": "Model deleted successfully"}), 200
 
-# --- CarYear CRUD ---
+#Car Year APIs
 
 @car_bp.route("/years", methods=["GET"], strict_slashes=False)
 @token_required
+@paginate(car_year_schema)
 def get_years(current_user):
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 10, type=int)
-    pagination = CarYear.query.paginate(page=page, per_page=per_page, error_out=False)
-    
-    return jsonify({
-        "items": car_years_schema.dump(pagination.items),
-        "total": pagination.total,
-        "pages": pagination.pages,
-        "current_page": pagination.page,
-        "per_page": pagination.per_page,
-        "has_next": pagination.has_next,
-        "has_prev": pagination.has_prev
-    }), 200
+    return CarYear.query
 
 @car_bp.route("/years", methods=["POST"])
 @token_required
+@validate_schema(car_year_schema)
+@serialize_response(car_year_schema)
 def create_year(current_user):
     data = request.get_json(silent=True) or {}
-    
-    # Use Marshmallow to load and validate data
-    errors = car_year_schema.validate(data)
-    if errors:
-        return jsonify(errors), 400
     
     year = car_year_schema.load(data)
     db.session.add(year)
@@ -183,31 +141,29 @@ def create_year(current_user):
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        return jsonify({"error": "Year for this model already exists"}), 409
-    return car_year_schema.jsonify(year), 201
+        return {"error": "Year for this model already exists"}, 409
+    return year, 201
 
 @car_bp.route("/years/<string:year_id>", methods=["GET"])
 @token_required
+@serialize_response(car_year_schema)
 def get_year(current_user, year_id):
     year = CarYear.query.get_or_404(year_id)
-    return car_year_schema.jsonify(year), 200
+    return year
 
 @car_bp.route("/years/<string:year_id>", methods=["PUT"])
 @token_required
+@validate_schema(car_year_schema, partial=True)
+@serialize_response(car_year_schema)
 def update_year(current_user, year_id):
     year = CarYear.query.get_or_404(year_id)
     data = request.get_json(silent=True) or {}
-    
-    # Use Marshmallow to load and validate data (partial=True for updates)
-    errors = car_year_schema.validate(data, partial=True)
-    if errors:
-        return jsonify(errors), 400
     
     # Marshmallow load with instance updates the existing object
     year = car_year_schema.load(data, instance=year, partial=True)
     
     db.session.commit()
-    return car_year_schema.jsonify(year), 200
+    return year
 
 @car_bp.route("/years/<string:year_id>", methods=["DELETE"])
 @token_required
@@ -216,6 +172,8 @@ def delete_year(current_user, year_id):
     db.session.delete(year)
     db.session.commit()
     return jsonify({"message": "Year deleted successfully"}), 200
+
+#Error Handler
 
 @car_bp.errorhandler(NotFound)
 def handle_not_found(error):
