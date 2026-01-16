@@ -15,7 +15,7 @@ car_bp = Blueprint("car", __name__, url_prefix="/cars")
 @token_required
 @paginate(car_make_schema)
 def list_makes(current_user):
-    return CarMake.query
+    return db.select(CarMake)
 
 @car_bp.route("/makes", methods=["POST"])
 @token_required
@@ -38,7 +38,9 @@ def create_make(current_user):
 @token_required
 @serialize_response(car_make_schema)
 def get_make(current_user, make_id):
-    make = CarMake.query.get_or_404(make_id)
+    make = db.session.execute(db.select(CarMake).filter_by(id=make_id)).scalar_one_or_none()
+    if not make:
+        raise NotFound(f"Make with ID {make_id} not found")
     return make
 
 @car_bp.route("/makes/<string:make_id>", methods=["PUT"])
@@ -46,7 +48,9 @@ def get_make(current_user, make_id):
 @validate_schema(car_make_schema, partial=True)
 @serialize_response(car_make_schema)
 def update_make(current_user, make_id):
-    make = CarMake.query.get_or_404(make_id)
+    make = db.session.execute(db.select(CarMake).filter_by(id=make_id)).scalar_one_or_none()
+    if not make:
+        raise NotFound(f"Make with ID {make_id} not found")
     data = request.get_json(silent=True) or {}
     
     # Marshmallow load with instance updates the existing object
@@ -62,7 +66,9 @@ def update_make(current_user, make_id):
 @car_bp.route("/makes/<string:make_id>", methods=["DELETE"])
 @token_required
 def delete_make(current_user, make_id):
-    make = CarMake.query.get_or_404(make_id)
+    make = db.session.execute(db.select(CarMake).filter_by(id=make_id)).scalar_one_or_none()
+    if not make:
+        raise NotFound(f"Make with ID {make_id} not found")
     db.session.delete(make)
     db.session.commit()
     return jsonify({"message": "Make deleted successfully"}), 200
@@ -73,7 +79,7 @@ def delete_make(current_user, make_id):
 @token_required
 @paginate(car_model_schema)
 def get_models(current_user):
-    return CarModel.query
+    return db.select(CarModel)
 
 @car_bp.route("/models", methods=["POST"])
 @token_required
@@ -95,7 +101,9 @@ def create_model(current_user):
 @token_required
 @serialize_response(car_model_schema)
 def get_model(current_user, model_id):
-    model = CarModel.query.get_or_404(model_id)
+    model = db.session.execute(db.select(CarModel).filter_by(id=model_id)).scalar_one_or_none()
+    if not model:
+        raise NotFound(f"Model with ID {model_id} not found")
     return model
 
 @car_bp.route("/models/<string:model_id>", methods=["PUT"])
@@ -103,7 +111,9 @@ def get_model(current_user, model_id):
 @validate_schema(car_model_schema, partial=True)
 @serialize_response(car_model_schema)
 def update_model(current_user, model_id):
-    model = CarModel.query.get_or_404(model_id)
+    model = db.session.execute(db.select(CarModel).filter_by(id=model_id)).scalar_one_or_none()
+    if not model:
+        raise NotFound(f"Model with ID {model_id} not found")
     data = request.get_json(silent=True) or {}
     
     # Marshmallow load with instance updates the existing object
@@ -115,7 +125,9 @@ def update_model(current_user, model_id):
 @car_bp.route("/models/<string:model_id>", methods=["DELETE"])
 @token_required
 def delete_model(current_user, model_id):
-    model = CarModel.query.get_or_404(model_id)
+    model = db.session.execute(db.select(CarModel).filter_by(id=model_id)).scalar_one_or_none()
+    if not model:
+        raise NotFound(f"Model with ID {model_id} not found")
     db.session.delete(model)
     db.session.commit()
     return jsonify({"message": "Model deleted successfully"}), 200
@@ -126,7 +138,7 @@ def delete_model(current_user, model_id):
 @token_required
 @paginate(car_year_schema)
 def get_years(current_user):
-    return CarYear.query
+    return db.select(CarYear)
 
 @car_bp.route("/years", methods=["POST"])
 @token_required
@@ -148,7 +160,9 @@ def create_year(current_user):
 @token_required
 @serialize_response(car_year_schema)
 def get_year(current_user, year_id):
-    year = CarYear.query.get_or_404(year_id)
+    year = db.session.execute(db.select(CarYear).filter_by(id=year_id)).scalar_one_or_none()
+    if not year:
+        raise NotFound(f"Year with ID {year_id} not found")
     return year
 
 @car_bp.route("/years/<string:year_id>", methods=["PUT"])
@@ -156,7 +170,9 @@ def get_year(current_user, year_id):
 @validate_schema(car_year_schema, partial=True)
 @serialize_response(car_year_schema)
 def update_year(current_user, year_id):
-    year = CarYear.query.get_or_404(year_id)
+    year = db.session.execute(db.select(CarYear).filter_by(id=year_id)).scalar_one_or_none()
+    if not year:
+        raise NotFound(f"Year with ID {year_id} not found")
     data = request.get_json(silent=True) or {}
     
     # Marshmallow load with instance updates the existing object
@@ -168,7 +184,9 @@ def update_year(current_user, year_id):
 @car_bp.route("/years/<string:year_id>", methods=["DELETE"])
 @token_required
 def delete_year(current_user, year_id):
-    year = CarYear.query.get_or_404(year_id)
+    year = db.session.execute(db.select(CarYear).filter_by(id=year_id)).scalar_one_or_none()
+    if not year:
+        raise NotFound(f"Year with ID {year_id} not found")
     db.session.delete(year)
     db.session.commit()
     return jsonify({"message": "Year deleted successfully"}), 200
