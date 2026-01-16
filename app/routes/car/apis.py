@@ -20,11 +20,10 @@ def list_makes(current_user):
 @car_bp.route("/makes", methods=["POST"])
 @token_required
 @validate_schema(car_make_schema)
-@serialize_response(car_make_schema)
 def create_make(current_user):
-    data = request.get_json(silent=True) or {}
     
-    make = car_make_schema.load(data)
+    data = request.get_json(silent=True) or {}
+    make = CarMake(name=data["name"])
     db.session.add(make)
     try:
         db.session.commit()
@@ -32,40 +31,39 @@ def create_make(current_user):
         db.session.rollback()
         return {"error": "Make already exists"}, 409
     
-    return make, 201
+    return make.to_dict(), 201
 
 @car_bp.route("/makes/<string:make_id>", methods=["GET"])
 @token_required
-@serialize_response(car_make_schema)
 def get_make(current_user, make_id):
+
     make = db.session.execute(db.select(CarMake).filter_by(id=make_id)).scalar_one_or_none()
     if not make:
         raise NotFound(f"Make with ID {make_id} not found")
-    return make
+    return make.to_dict(), 200
 
 @car_bp.route("/makes/<string:make_id>", methods=["PUT"])
 @token_required
 @validate_schema(car_make_schema, partial=True)
-@serialize_response(car_make_schema)
 def update_make(current_user, make_id):
+
+    data = request.get_json(silent=True) or {}
     make = db.session.execute(db.select(CarMake).filter_by(id=make_id)).scalar_one_or_none()
     if not make:
         raise NotFound(f"Make with ID {make_id} not found")
-    data = request.get_json(silent=True) or {}
-    
-    # Marshmallow load with instance updates the existing object
-    make = car_make_schema.load(data, instance=make, partial=True)
+    make.name = data["name"]
     
     try:
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
         return {"error": "Make name already exists"}, 409
-    return make
+    return make.to_dict(), 200
 
 @car_bp.route("/makes/<string:make_id>", methods=["DELETE"])
 @token_required
 def delete_make(current_user, make_id):
+
     make = db.session.execute(db.select(CarMake).filter_by(id=make_id)).scalar_one_or_none()
     if not make:
         raise NotFound(f"Make with ID {make_id} not found")
@@ -84,47 +82,48 @@ def get_models(current_user):
 @car_bp.route("/models", methods=["POST"])
 @token_required
 @validate_schema(car_model_schema)
-@serialize_response(car_model_schema)
 def create_model(current_user):
+
     data = request.get_json(silent=True) or {}
-    
-    model = car_model_schema.load(data)
+    model = CarModel(name=data["name"], make_id=data["make_id"])
     db.session.add(model)
     try:
         db.session.commit()
     except Exception:
         db.session.rollback()
         return {"error": "Could not create model"}, 500
-    return model, 201
+    return model.to_dict(), 201
 
 @car_bp.route("/models/<string:model_id>", methods=["GET"])
 @token_required
-@serialize_response(car_model_schema)
 def get_model(current_user, model_id):
+
     model = db.session.execute(db.select(CarModel).filter_by(id=model_id)).scalar_one_or_none()
     if not model:
         raise NotFound(f"Model with ID {model_id} not found")
-    return model
+    return model.to_dict(), 200
 
 @car_bp.route("/models/<string:model_id>", methods=["PUT"])
 @token_required
 @validate_schema(car_model_schema, partial=True)
-@serialize_response(car_model_schema)
 def update_model(current_user, model_id):
+
+    data = request.get_json(silent=True) or {}
     model = db.session.execute(db.select(CarModel).filter_by(id=model_id)).scalar_one_or_none()
     if not model:
         raise NotFound(f"Model with ID {model_id} not found")
-    data = request.get_json(silent=True) or {}
-    
-    # Marshmallow load with instance updates the existing object
-    model = car_model_schema.load(data, instance=model, partial=True)
-    
-    db.session.commit()
-    return model
+    model.name = data["name"]
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return {"error": "Model name already exists"}, 409
+    return model.to_dict(), 200
 
 @car_bp.route("/models/<string:model_id>", methods=["DELETE"])
 @token_required
 def delete_model(current_user, model_id):
+
     model = db.session.execute(db.select(CarModel).filter_by(id=model_id)).scalar_one_or_none()
     if not model:
         raise NotFound(f"Model with ID {model_id} not found")
@@ -143,47 +142,49 @@ def get_years(current_user):
 @car_bp.route("/years", methods=["POST"])
 @token_required
 @validate_schema(car_year_schema)
-@serialize_response(car_year_schema)
 def create_year(current_user):
+
     data = request.get_json(silent=True) or {}
-    
-    year = car_year_schema.load(data)
+    year = CarYear(year=data["year"], model_id=data["model_id"])
     db.session.add(year)
     try:
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
         return {"error": "Year for this model already exists"}, 409
-    return year, 201
+    return year.to_dict(), 201
 
 @car_bp.route("/years/<string:year_id>", methods=["GET"])
 @token_required
-@serialize_response(car_year_schema)
 def get_year(current_user, year_id):
+
     year = db.session.execute(db.select(CarYear).filter_by(id=year_id)).scalar_one_or_none()
     if not year:
         raise NotFound(f"Year with ID {year_id} not found")
-    return year
+    return year.to_dict(), 200
 
 @car_bp.route("/years/<string:year_id>", methods=["PUT"])
 @token_required
 @validate_schema(car_year_schema, partial=True)
-@serialize_response(car_year_schema)
 def update_year(current_user, year_id):
+
+    data = request.get_json(silent=True) or {}
     year = db.session.execute(db.select(CarYear).filter_by(id=year_id)).scalar_one_or_none()
     if not year:
         raise NotFound(f"Year with ID {year_id} not found")
-    data = request.get_json(silent=True) or {}
+    year.year = data["year"]
     
-    # Marshmallow load with instance updates the existing object
-    year = car_year_schema.load(data, instance=year, partial=True)
-    
-    db.session.commit()
-    return year
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return {"error": "Year for this model already exists"}, 409
+    return year.to_dict(), 200
 
 @car_bp.route("/years/<string:year_id>", methods=["DELETE"])
 @token_required
 def delete_year(current_user, year_id):
+    
     year = db.session.execute(db.select(CarYear).filter_by(id=year_id)).scalar_one_or_none()
     if not year:
         raise NotFound(f"Year with ID {year_id} not found")

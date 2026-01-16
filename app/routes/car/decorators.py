@@ -64,25 +64,6 @@ def validate_schema(schema, partial=False):
         return decorated_function
     return decorator
 
-def serialize_response(schema, many=False):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            result = f(*args, **kwargs)
-            
-            # Check if result is a tuple (data, status_code)
-            if isinstance(result, tuple) and len(result) == 2:
-                data, status_code = result
-            else:
-                data = result
-                status_code = 200
-            
-            # Serialize the data using the provided schema
-            serialized_data = schema.dump(data)
-            return jsonify(serialized_data), status_code
-        return decorated_function
-    return decorator
-
 def paginate(schema):
     def decorator(f):
         @wraps(f)
