@@ -3,7 +3,7 @@ import jwt
 from flask import request, jsonify, current_app
 from app.models import User
 from app.routes.auth.constants import (JWT_SECRET_KEY_CONFIG_KEY,JWT_ALGORITHM,JWT_SUBJECT_KEY)
-
+from app import db
 
 def token_required(f):
     @wraps(f)
@@ -37,7 +37,7 @@ def token_required(f):
             )
             # Get the user ID from the token subject
             user_id = payload[JWT_SUBJECT_KEY]
-            current_user = User.query.get(user_id)
+            current_user = db.session.get(User, user_id)
             if not current_user:
                 return jsonify({"error": "Invalid authentication token"}), 401
             
@@ -87,23 +87,18 @@ def paginate(schema):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            # Get pagination parameters from query string
+            
             page = request.args.get("page", 1, type=int)
             per_page = request.args.get("per_page", 10, type=int)
             
-            # Limit per_page to prevent abuse
             per_page = min(per_page, 100)
             
-            # Call the route function - it should return a query object
-            query = f(*args, **kwargs)
+            statement = f(*args, **kwargs)
             
-            # Paginate the query
-            pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+            pagination = db.paginate(statement, page=page, per_page=per_page, error_out=False)
             
-            # Serialize the items
             serialized_items = schema.dump(pagination.items, many=True)
             
-            # Build response
             response = {
                 'items': serialized_items,
                 'pagination': {

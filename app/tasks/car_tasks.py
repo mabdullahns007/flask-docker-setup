@@ -3,7 +3,10 @@ import requests
 from app import db
 from app.models.car import CarMake, CarModel, CarYear
 from app.constants import URL
+from celery.utils.log import get_task_logger
 from celery_app import celery_app
+
+logger = get_task_logger(__name__)
 
 @celery_app.task(name="data_sync_task")
 def carDataSync():
@@ -26,21 +29,21 @@ def carDataSync():
                 continue
                 
             # Upsert CarMake
-            make = CarMake.query.filter_by(name=make_name).first()
+            make = db.session.execute(db.select(CarMake).filter_by(name=make_name)).scalar()
             if not make:
                 make = CarMake(name=make_name)
                 db.session.add(make)
                 db.session.flush()  # To get make.id
             
             # Upsert CarModel
-            model = CarModel.query.filter_by(name=model_name, make_id=make.id).first()
+            model = db.session.execute(db.select(CarModel).filter_by(name=model_name, make_id=make.id)).scalar()
             if not model:
                 model = CarModel(name=model_name, make_id=make.id)
                 db.session.add(model)
                 db.session.flush()  # To get model.id
                 
             # Upsert CarYear
-            car_year = CarYear.query.filter_by(year=int(year), model_id=model.id).first()
+            car_year = db.session.execute(db.select(CarYear).filter_by(year=int(year), model_id=model.id)).scalar()
             if not car_year:
                 car_year = CarYear(year=int(year), model_id=model.id)
                 db.session.add(car_year)
@@ -48,8 +51,9 @@ def carDataSync():
             synced_count += 1
             
         db.session.commit()
-        print(f"Synced {synced_count} records.")    
+        logger.info(f"Synced {synced_count} records.")    
         
     except Exception as e:
         db.session.rollback()
+        logger.error(f"Error during sync: {str(e)}")
         return f"Error during sync: {str(e)}"
