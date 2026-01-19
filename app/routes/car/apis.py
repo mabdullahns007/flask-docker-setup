@@ -4,7 +4,7 @@ from app import db
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import NotFound
 from app.routes.car.schemas import (car_make_schema,car_model_schema,car_year_schema)
-from app.routes.car.decorators import token_required, validate_schema, serialize_response, paginate
+from app.routes.car.decorators import token_required, validate_schema, paginate
 
 
 car_bp = Blueprint("car", __name__, url_prefix="/cars")
@@ -184,7 +184,7 @@ def update_year(current_user, year_id):
 @car_bp.route("/years/<string:year_id>", methods=["DELETE"])
 @token_required
 def delete_year(current_user, year_id):
-    
+
     year = db.session.execute(db.select(CarYear).filter_by(id=year_id)).scalar_one_or_none()
     if not year:
         raise NotFound(f"Year with ID {year_id} not found")

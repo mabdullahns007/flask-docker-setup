@@ -17,7 +17,7 @@ def celery_init_app(app) -> Celery:
         beat_schedule={
             "daily-data-sync": {
                 "task": "data_sync_task",
-                "schedule": timedelta(days=1),  # Daily (every 24 hours)
+                "schedule": timedelta(seconds=23),  # Daily (every 24 hours)
             }
         },
         task_ignore_result=False,
