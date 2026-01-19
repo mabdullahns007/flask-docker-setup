@@ -57,7 +57,7 @@ def login():
     if not EMAIL_REGEX.match(email):
         return jsonify({"error": INVALID_EMAIL_FORMAT_ERROR}), 400
 
-    user = db.session.execute(db.select(User).filter_by(email=email)).scalar_one_or_none()
+    user = db.session.query(User).filter_by(email=email).first()
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({"error": INVALID_EMAIL_OR_PASSWORD_ERROR}), 401
     user.last_login_at = datetime.utcnow()
