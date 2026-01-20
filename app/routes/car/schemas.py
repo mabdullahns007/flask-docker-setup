@@ -1,21 +1,43 @@
 from marshmallow import Schema, fields
+from apiflask.fields import String, Integer, List, Nested
+from apiflask import PaginationSchema
 
-class CarMakeSchema(Schema):
-    id = fields.String(dump_only=True)  
-    name = fields.String(required=True)
+#Input Schemas
+class CarMakeInputSchema(Schema):
+    name = String(required=True)
 
-class CarModelSchema(Schema):
-    id = fields.String(dump_only=True)  
-    name = fields.String(required=True)
-    make_id = fields.String(required=True)  
+class CarModelInputSchema(Schema):
+    name = String(required=True)
+    make_id = String()  
 
-class CarYearSchema(Schema):
-    id = fields.String(dump_only=True)  
-    year = fields.Integer(required=True)
-    model_id = fields.String(required=True)  
+class CarYearInputSchema(Schema):
+    year = Integer(required=True)
+    model_id = String()  
 
-car_make_schema = CarMakeSchema()
+#Output Schemas
+class CarMakeOutputSchema(Schema):
+    id = String()
+    name = String()
 
-car_model_schema = CarModelSchema()
+class CarModelOutputSchema(Schema):
+    id = String()
+    name = String()
+    make_id = String()
 
-car_year_schema = CarYearSchema()
+class CarYearOutputSchema(Schema):
+    id = String()
+    year = Integer()
+    model_id = String()
+
+#pagination Schemas
+class CarMakeOuts(Schema):
+    items = List(Nested(CarMakeOutputSchema))
+    pagination = Nested(PaginationSchema)
+
+class CarModelOuts(Schema):
+    items = List(Nested(CarModelOutputSchema))
+    pagination = Nested(PaginationSchema)
+
+class CarYearOuts(Schema):
+    items = List(Nested(CarYearOutputSchema))
+    pagination = Nested(PaginationSchema)
