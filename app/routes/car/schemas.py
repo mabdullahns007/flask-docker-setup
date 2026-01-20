@@ -30,14 +30,13 @@ class CarYearOutputSchema(Schema):
     model_id = String()
 
 #pagination Schemas
-class CarMakeOuts(Schema):
-    items = List(Nested(CarMakeOutputSchema))
-    pagination = Nested(PaginationSchema)
+def genericPaginatedSchema(itemSchema):
+    class GenericPaginatedSchema(Schema):
+        items = List(Nested(itemSchema))
+        pagination = Nested(PaginationSchema)
+    return GenericPaginatedSchema
 
-class CarModelOuts(Schema):
-    items = List(Nested(CarModelOutputSchema))
-    pagination = Nested(PaginationSchema)
-
-class CarYearOuts(Schema):
-    items = List(Nested(CarYearOutputSchema))
-    pagination = Nested(PaginationSchema)
+# Pagination Query Parameters Schema
+class PaginationQuerySchema(Schema):
+    page = Integer(load_default=1, metadata={'description': 'Page number'})
+    per_page = Integer(load_default=10, metadata={'description': 'Items per page'})
