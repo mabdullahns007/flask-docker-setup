@@ -52,47 +52,17 @@ def token_required(f):
 
     return decorated
 
-def validate_schema(schema, partial=False):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            data = request.get_json(silent=True) or {}
-            errors = schema.validate(data, partial=partial)
-            if errors:
-                return jsonify(errors), 400
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
-
-def paginate(schema):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            
-            page = request.args.get("page", 1, type=int)
-            per_page = request.args.get("per_page", 10, type=int)
-            
-            per_page = min(per_page, 100)
-            
-            statement = f(*args, **kwargs)
-            
-            pagination = db.paginate(statement, page=page, per_page=per_page, error_out=False)
-            
-            serialized_items = schema.dump(pagination.items, many=True)
-            
-            response = {
-                'items': serialized_items,
-                'pagination': {
-                    'total': pagination.total,
-                    'pages': pagination.pages,
-                    'current_page': pagination.page,
-                    'per_page': pagination.per_page,
-                    'has_next': pagination.has_next,
-                    'has_prev': pagination.has_prev
-                }
-            }
-            
-            return jsonify(response), 200
-            
-        return decorated_function
-    return decorator
+def paginationSchema(pagination):
+    return {
+        "items": pagination.items,
+        "pagination": {
+            "page": pagination.page,
+            "per_page": pagination.per_page,
+            "pages": pagination.pages,
+            "total": pagination.total,
+            "next_num": pagination.next_num,
+            "has_next": pagination.has_next,
+            "prev_num": pagination.prev_num,
+            "has_prev": pagination.has_prev
+        }
+    }

@@ -6,9 +6,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app.models import User
 from app import db
 from app.routes.auth.constants import (EMAIL_PASSWORD_REQUIRED_ERROR,INVALID_EMAIL_FORMAT_ERROR,EMAIL_ALREADY_REGISTERED_ERROR,INVALID_EMAIL_OR_PASSWORD_ERROR,LOGIN_COMPLETION_ERROR,JWT_EXPIRATION_MINUTES_CONFIG_KEY,JWT_SECRET_KEY_CONFIG_KEY,JWT_DEFAULT_EXPIRATION_MINUTES,JWT_ALGORITHM,JWT_SUBJECT_KEY,JWT_EMAIL_KEY,JWT_ISSUED_AT_KEY,JWT_EXPIRATION_KEY,EMAIL_REGEX,PASSWORD_REGEX,PASSWORD_REQUIREMENTS_MESSAGE)
+from apiflask import APIBlueprint
+from app.routes.auth.schemas import UserSchema
 
-
-auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
+auth_bp = APIBlueprint("auth", __name__, url_prefix="/auth")
 
 def _generate_access_token(user: User) -> str:
     issued_at = datetime.utcnow()
@@ -23,10 +24,10 @@ def _generate_access_token(user: User) -> str:
     return token
 
 @auth_bp.route("/signup", methods=["POST"])
-def signup():
-    data = request.get_json(silent=True) or {}
-    email = (data.get("email") or "").strip().lower()
-    password = data.get("password")
+@auth_bp.input(UserSchema, location="json")
+def signup(json_data):
+    email = (json_data.get("email") or "").strip().lower()
+    password = json_data.get("password")
     if not email or not password:
         return jsonify({"error": EMAIL_PASSWORD_REQUIRED_ERROR}), 400
 
@@ -47,10 +48,10 @@ def signup():
     return jsonify({"user": user.to_dict(), "token": token}), 201
 
 @auth_bp.route("/login", methods=["POST"])
-def login():
-    data = request.get_json(silent=True) or {}
-    email = (data.get("email") or "").strip().lower()
-    password = data.get("password")
+@auth_bp.input(UserSchema, location="json")
+def login(json_data):
+    email = (json_data.get("email") or "").strip().lower()
+    password = json_data.get("password")
     if not email or not password:
         return jsonify({"error": EMAIL_PASSWORD_REQUIRED_ERROR}), 400
 

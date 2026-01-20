@@ -3,27 +3,32 @@ from app.models import CarMake, CarModel, CarYear
 from app import db
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import NotFound
-from app.routes.car.schemas import (car_make_schema,car_model_schema,car_year_schema)
-from app.routes.car.decorators import token_required, validate_schema, paginate
+from app.routes.car.schemas import (CarMakeInputSchema,CarModelInputSchema,CarYearInputSchema,CarMakeOutputSchema,CarModelOutputSchema,CarYearOutputSchema)
+from app.routes.car.decorators import token_required, paginationSchema
+from apiflask import APIBlueprint
+from app.routes.car.schemas import CarMakeOuts,CarModelOuts,CarYearOuts
 
 
-car_bp = Blueprint("car", __name__, url_prefix="/cars")
+car_bp = APIBlueprint("car", __name__, url_prefix="/cars")
 
 #Car Make APIs
 
 @car_bp.route("/makes", methods=["GET"], strict_slashes=False)
 @token_required
-@paginate(car_make_schema)
+@car_bp.output(CarMakeOuts)
 def list_makes(current_user):
-    return db.select(CarMake)
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+    query = db.session.query(CarMake)
+    pagination = query.paginate(page=page, per_page=per_page)
+    return paginationSchema(pagination)
 
 @car_bp.route("/makes", methods=["POST"])
 @token_required
-@validate_schema(car_make_schema)
-def create_make(current_user):
-    
-    data = request.get_json(silent=True) or {}
-    make = CarMake(name=data["name"])
+@car_bp.input(CarMakeInputSchema, location="json")
+def create_make(current_user, json_data):
+
+    make = CarMake(name=json_data["name"])
     db.session.add(make)
     try:
         db.session.commit()
@@ -35,23 +40,23 @@ def create_make(current_user):
 
 @car_bp.route("/makes/<string:make_id>", methods=["GET"])
 @token_required
+@car_bp.output(CarMakeOutputSchema)
 def get_make(current_user, make_id):
 
     make = db.session.execute(db.select(CarMake).filter_by(id=make_id)).scalar_one_or_none()
     if not make:
         raise NotFound(f"Make with ID {make_id} not found")
-    return make.to_dict(), 200
+    return make, 200
 
 @car_bp.route("/makes/<string:make_id>", methods=["PUT"])
 @token_required
-@validate_schema(car_make_schema, partial=True)
-def update_make(current_user, make_id):
+@car_bp.input(CarMakeInputSchema, location="json")
+def update_make(current_user, make_id, json_data):
 
-    data = request.get_json(silent=True) or {}
     make = db.session.execute(db.select(CarMake).filter_by(id=make_id)).scalar_one_or_none()
     if not make:
         raise NotFound(f"Make with ID {make_id} not found")
-    make.name = data["name"]
+    make.name = json_data["name"]
     
     try:
         db.session.commit()
@@ -75,17 +80,20 @@ def delete_make(current_user, make_id):
 
 @car_bp.route("/models", methods=["GET"], strict_slashes=False)
 @token_required
-@paginate(car_model_schema)
+@car_bp.output(CarModelOuts)
 def get_models(current_user):
-    return db.select(CarModel)
+    page=request.args.get("page", 1, type=int)
+    per_page=request.args.get("per_page", 10, type=int)
+    query=db.session.query(CarModel)
+    pagination=query.paginate(page=page, per_page=per_page)
+    return paginationSchema(pagination)
 
 @car_bp.route("/models", methods=["POST"])
 @token_required
-@validate_schema(car_model_schema)
-def create_model(current_user):
+@car_bp.input(CarModelInputSchema, location="json")
+def create_model(current_user, json_data):
 
-    data = request.get_json(silent=True) or {}
-    model = CarModel(name=data["name"], make_id=data["make_id"])
+    model = CarModel(name=json_data["name"], make_id=json_data["make_id"])
     db.session.add(model)
     try:
         db.session.commit()
@@ -96,23 +104,23 @@ def create_model(current_user):
 
 @car_bp.route("/models/<string:model_id>", methods=["GET"])
 @token_required
+@car_bp.output(CarModelOutputSchema)
 def get_model(current_user, model_id):
 
     model = db.session.execute(db.select(CarModel).filter_by(id=model_id)).scalar_one_or_none()
     if not model:
         raise NotFound(f"Model with ID {model_id} not found")
-    return model.to_dict(), 200
+    return model, 200
 
 @car_bp.route("/models/<string:model_id>", methods=["PUT"])
 @token_required
-@validate_schema(car_model_schema, partial=True)
-def update_model(current_user, model_id):
+@car_bp.input(CarModelInputSchema, location="json")
+def update_model(current_user, model_id, json_data):
 
-    data = request.get_json(silent=True) or {}
     model = db.session.execute(db.select(CarModel).filter_by(id=model_id)).scalar_one_or_none()
     if not model:
         raise NotFound(f"Model with ID {model_id} not found")
-    model.name = data["name"]
+    model.name = json_data["name"]
     try:
         db.session.commit()
     except IntegrityError:
@@ -135,17 +143,20 @@ def delete_model(current_user, model_id):
 
 @car_bp.route("/years", methods=["GET"], strict_slashes=False)
 @token_required
-@paginate(car_year_schema)
+@car_bp.output(CarYearOuts)
 def get_years(current_user):
-    return db.select(CarYear)
+    page=request.args.get("page", 1, type=int)
+    per_page=request.args.get("per_page", 10, type=int)
+    query=db.session.query(CarYear)
+    pagination=query.paginate(page=page, per_page=per_page)
+    return paginationSchema(pagination)
 
 @car_bp.route("/years", methods=["POST"])
 @token_required
-@validate_schema(car_year_schema)
-def create_year(current_user):
+@car_bp.input(CarYearInputSchema, location="json")
+def create_year(current_user, json_data):
 
-    data = request.get_json(silent=True) or {}
-    year = CarYear(year=data["year"], model_id=data["model_id"])
+    year = CarYear(year=json_data["year"], model_id=json_data["model_id"])
     db.session.add(year)
     try:
         db.session.commit()
@@ -156,23 +167,23 @@ def create_year(current_user):
 
 @car_bp.route("/years/<string:year_id>", methods=["GET"])
 @token_required
+@car_bp.output(CarYearOutputSchema)
 def get_year(current_user, year_id):
 
     year = db.session.execute(db.select(CarYear).filter_by(id=year_id)).scalar_one_or_none()
     if not year:
         raise NotFound(f"Year with ID {year_id} not found")
-    return year.to_dict(), 200
+    return year, 200
 
 @car_bp.route("/years/<string:year_id>", methods=["PUT"])
 @token_required
-@validate_schema(car_year_schema, partial=True)
-def update_year(current_user, year_id):
+@car_bp.input(CarYearInputSchema, location="json")
+def update_year(current_user, year_id, json_data):
 
-    data = request.get_json(silent=True) or {}
     year = db.session.execute(db.select(CarYear).filter_by(id=year_id)).scalar_one_or_none()
     if not year:
         raise NotFound(f"Year with ID {year_id} not found")
-    year.year = data["year"]
+    year.year = json_data["year"]
     
     try:
         db.session.commit()

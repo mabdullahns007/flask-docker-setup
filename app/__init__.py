@@ -16,6 +16,7 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI", DEFAULT_DATABASE_URI)
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", app.config["SECRET_KEY"])
+    app.config["BASE_RESPONSE_SCHEMA"] = None
     expiration_env = os.getenv("JWT_EXPIRATION_MINUTES")
 
     try:
