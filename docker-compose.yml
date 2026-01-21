@@ -86,8 +86,8 @@ services:
 =======
   worker:
     build: .
-    container_name: flask-worker
-    command: celery -A celery_app.celery_app worker --loglevel INFO
+    container_name: worker
+    command: ./scripts/worker.sh
     environment:
       - FLASK_ENV=${FLASK_ENV:-development}
       - SECRET_KEY=${SECRET_KEY:-supersecretkey}
@@ -111,8 +111,8 @@ services:
 
   beat:
     build: .
-    container_name: flask-beat
-    command: celery -A celery_app.celery_app beat --loglevel INFO
+    container_name: beat
+    command: ./scripts/beat.sh
     environment:
       - FLASK_ENV=${FLASK_ENV:-development}
       - SECRET_KEY=${SECRET_KEY:-supersecretkey}

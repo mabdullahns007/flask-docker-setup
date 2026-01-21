@@ -34,7 +34,7 @@ def create_app():
     from app import tasks
 =======
     migrate.init_app(app, db)
-    from celery_app import celery_init_app
+    from app.tasks.celery_app import celery_init_app
     celery_init_app(app)
 >>>>>>> 6cec868 (Migrations for new Models, Celery Integration)
 
