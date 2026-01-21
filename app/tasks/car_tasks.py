@@ -4,7 +4,7 @@ from app import db
 from app.models.car import CarMake, CarModel, CarYear
 from app.constants import URL
 from celery.utils.log import get_task_logger
-from celery_app import celery_app
+from app.tasks.celery_app import celery_app
 
 logger = get_task_logger(__name__)
 

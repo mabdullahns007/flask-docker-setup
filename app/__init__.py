@@ -26,7 +26,7 @@ def create_app():
     app.config["JWT_EXPIRATION_MINUTES"] = expiration_minutes
     db.init_app(app)
     migrate.init_app(app, db)
-    from celery_app import celery_init_app
+    from app.tasks.celery_app import celery_init_app
     celery_init_app(app)
 
     from app.routes.auth.apis import auth_bp

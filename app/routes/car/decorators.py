@@ -12,7 +12,6 @@ def token_required(f):
 
         # Check if Authorization header is present
         auth_header = request.headers.get("Authorization")
-        print(auth_header)
         if auth_header:
             parts = auth_header.split()
             if len(parts) == 2 and parts[0].lower() == "bearer":
