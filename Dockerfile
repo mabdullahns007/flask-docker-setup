@@ -20,4 +20,3 @@ COPY . .
 RUN chmod +x scripts/*.sh
 
 CMD ["python3", "-m", "flask", "--app", "app:create_app", "run", "--host=0.0.0.0"]
-

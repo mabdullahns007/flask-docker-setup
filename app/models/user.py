@@ -37,4 +37,3 @@ class User(db.Model):
                 self.last_login_at.isoformat() if self.last_login_at else None
             ),
         }
-

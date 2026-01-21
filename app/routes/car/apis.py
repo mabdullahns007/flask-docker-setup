@@ -24,7 +24,7 @@ def list_makes(current_user, query_data):
 
 @car_bp.route("/makes", methods=["POST"])
 @token_required
-@car_bp.input(CarMakeInputSchema, location="json")
+@car_bp.input(CarMakeInputSchema)
 def create_make(current_user, json_data):
     make = CarMake(name=json_data["name"])
     db.session.add(make)
@@ -47,7 +47,7 @@ def get_make(current_user, make_id):
 
 @car_bp.route("/makes/<string:make_id>", methods=["PUT"])
 @token_required
-@car_bp.input(CarMakeInputSchema, location="json")
+@car_bp.input(CarMakeInputSchema)
 def update_make(current_user, make_id, json_data):
     make = db.session.execute(db.select(CarMake).filter_by(id=make_id)).scalar_one_or_none()
     if not make:
@@ -86,7 +86,7 @@ def get_models(current_user, query_data):
 
 @car_bp.route("/models", methods=["POST"])
 @token_required
-@car_bp.input(CarModelInputSchema, location="json")
+@car_bp.input(CarModelInputSchema)
 def create_model(current_user, json_data):
     model = CarModel(name=json_data["name"], make_id=json_data["make_id"])
     db.session.add(model)
@@ -108,7 +108,7 @@ def get_model(current_user, model_id):
 
 @car_bp.route("/models/<string:model_id>", methods=["PUT"])
 @token_required
-@car_bp.input(CarModelInputSchema, location="json")
+@car_bp.input(CarModelInputSchema)
 def update_model(current_user, model_id, json_data):
     model = db.session.execute(db.select(CarModel).filter_by(id=model_id)).scalar_one_or_none()
     if not model:
@@ -146,7 +146,7 @@ def get_years(current_user, query_data):
 
 @car_bp.route("/years", methods=["POST"])
 @token_required
-@car_bp.input(CarYearInputSchema, location="json")
+@car_bp.input(CarYearInputSchema)
 def create_year(current_user, json_data):
     year = CarYear(year=json_data["year"], model_id=json_data["model_id"])
     db.session.add(year)
@@ -168,7 +168,7 @@ def get_year(current_user, year_id):
 
 @car_bp.route("/years/<string:year_id>", methods=["PUT"])
 @token_required
-@car_bp.input(CarYearInputSchema, location="json")
+@car_bp.input(CarYearInputSchema)
 def update_year(current_user, year_id, json_data):
     year = db.session.execute(db.select(CarYear).filter_by(id=year_id)).scalar_one_or_none()
     if not year:
@@ -199,4 +199,3 @@ def handle_not_found(error):
         "error": "Resource not found",
         "message": error.description
     }), 404
-

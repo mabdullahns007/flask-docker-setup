@@ -40,3 +40,4 @@ def genericPaginatedSchema(itemSchema):
 class PaginationQuerySchema(Schema):
     page = Integer(load_default=1, metadata={'description': 'Page number'})
     per_page = Integer(load_default=10, metadata={'description': 'Items per page'})
+    

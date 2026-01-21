@@ -24,7 +24,7 @@ def _generate_access_token(user: User) -> str:
     return token
 
 @auth_bp.route("/signup", methods=["POST"])
-@auth_bp.input(UserSchema, location="json")
+@auth_bp.input(UserSchema)
 def signup(json_data):
     email = (json_data.get("email") or "").strip().lower()
     password = json_data.get("password")
@@ -48,7 +48,7 @@ def signup(json_data):
     return jsonify({"user": user.to_dict(), "token": token}), 201
 
 @auth_bp.route("/login", methods=["POST"])
-@auth_bp.input(UserSchema, location="json")
+@auth_bp.input(UserSchema)
 def login(json_data):
     email = (json_data.get("email") or "").strip().lower()
     password = json_data.get("password")
