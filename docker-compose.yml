@@ -145,6 +145,9 @@ volumes:
 networks:
   flask_network:
     driver: bridge
+<<<<<<< HEAD
 
 >>>>>>> 5373901 (docker volumes, networks, innit file simplify, entrypoint script, manual marshmallow schema)
 
+=======
+>>>>>>> 7013ca2 (newline at the EOF, remoal of location=json)
