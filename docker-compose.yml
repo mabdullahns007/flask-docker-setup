@@ -1,32 +1,67 @@
-version: '3.8'
-
 services:
   web:
     build: .
+    container_name: flask-web
+    command: ./scripts/entrypoint.sh
     ports:
       - "5000:5000"
-    env_file:
-      - .env
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - SECRET_KEY=${SECRET_KEY:-supersecretkey}
+      - MYSQL_USER=${MYSQL_USER:-root}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-rootpassword}
+      - MYSQL_DB=${MYSQL_DB:-flaskdb}
+      - MYSQL_HOST=${MYSQL_HOST:-db}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - DATABASE_URI=${DATABASE_URI:-mysql://root:rootpassword@db:3306/flaskdb}
+      - PARSE_APPLICATION_ID=${PARSE_APPLICATION_ID:-hlhoNKjOvEhqzcVAJ1lxjicJLZNVv36GdbboZj3Z}
+      - PARSE_MASTER_KEY=${PARSE_MASTER_KEY:-SNMJJF0CZZhTPhLDIqGhTlUNV9r60M2Z5spyWfXW}
+      - RUN_MIGRATIONS=true
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
-      - .:/app
+      - .:/backendFlask
+    networks:
+      - flask_network
 
   db:
     image: mysql:8.0
+    container_name: flask-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: flaskdb
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DB:-flaskdb}
     ports:
       - "3306:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${MYSQL_USER} -p${MYSQL_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - flask_network
 
   redis:
     image: redis:7.0
+    container_name: flask-redis
     ports:
       - "6379:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - flask_network
 
+<<<<<<< HEAD
   celery_worker:
     build: .
     command: celery -A make_celery worker --loglevel=info
@@ -48,4 +83,71 @@ services:
       - db
     volumes:
       - .:/app
+=======
+  worker:
+    build: .
+    container_name: worker
+    command: ./scripts/worker.sh
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - SECRET_KEY=${SECRET_KEY:-supersecretkey}
+      - MYSQL_USER=${MYSQL_USER:-root}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-rootpassword}
+      - MYSQL_DB=${MYSQL_DB:-flaskdb}
+      - MYSQL_HOST=${MYSQL_HOST:-db}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - DATABASE_URI=${DATABASE_URI:-mysql://root:rootpassword@db:3306/flaskdb}
+      - PARSE_APPLICATION_ID=${PARSE_APPLICATION_ID:-hlhoNKjOvEhqzcVAJ1lxjicJLZNVv36GdbboZj3Z}
+      - PARSE_MASTER_KEY=${PARSE_MASTER_KEY:-SNMJJF0CZZhTPhLDIqGhTlUNV9r60M2Z5spyWfXW}
+    volumes:
+      - .:/backendFlask
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - flask_network
 
+  beat:
+    build: .
+    container_name: beat
+    command: ./scripts/beat.sh
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - SECRET_KEY=${SECRET_KEY:-supersecretkey}
+      - MYSQL_USER=${MYSQL_USER:-root}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-rootpassword}
+      - MYSQL_DB=${MYSQL_DB:-flaskdb}
+      - MYSQL_HOST=${MYSQL_HOST:-db}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - DATABASE_URI=${DATABASE_URI:-mysql://root:rootpassword@db:3306/flaskdb}
+      - PARSE_APPLICATION_ID=${PARSE_APPLICATION_ID:-hlhoNKjOvEhqzcVAJ1lxjicJLZNVv36GdbboZj3Z}
+      - PARSE_MASTER_KEY=${PARSE_MASTER_KEY:-SNMJJF0CZZhTPhLDIqGhTlUNV9r60M2Z5spyWfXW}
+    volumes:
+      - .:/backendFlask
+    depends_on:
+<<<<<<< HEAD
+      - db
+      - redis
+>>>>>>> 6cec868 (Migrations for new Models, Celery Integration)
+=======
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - flask_network
+
+volumes:
+  db_data:
+
+networks:
+  flask_network:
+    driver: bridge
+<<<<<<< HEAD
+
+>>>>>>> 5373901 (docker volumes, networks, innit file simplify, entrypoint script, manual marshmallow schema)
+
+=======
+>>>>>>> 7013ca2 (newline at the EOF, remoal of location=json)

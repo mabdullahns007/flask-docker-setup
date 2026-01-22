@@ -1,9 +1,11 @@
 from datetime import datetime
+import uuid
 from app import db
 
 
 class User(db.Model):
-
+    __tablename__ = "users"
+    
     # Keys for serialization
     ID_KEY = "id"
     EMAIL_KEY = "email"
@@ -11,8 +13,8 @@ class User(db.Model):
     CREATED_AT_KEY = "created_at"
     LAST_LOGIN_AT_KEY = "last_login_at"
     
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
+
+    id = db.Column(db.String(32), primary_key=True, default=lambda: uuid.uuid4().hex)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -35,4 +37,3 @@ class User(db.Model):
                 self.last_login_at.isoformat() if self.last_login_at else None
             ),
         }
-

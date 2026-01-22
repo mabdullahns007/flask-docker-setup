@@ -1,7 +1,6 @@
-from datetime import datetime
 from app import db
+import uuid
 from sqlalchemy import UniqueConstraint
-
 
 
 class CarMake(db.Model):
@@ -11,7 +10,7 @@ class CarMake(db.Model):
     ID_KEY = "id"
     NAME_KEY = "name"
     
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(32), primary_key=True, default=lambda: uuid.uuid4().hex)
     name = db.Column(db.String(255), nullable=False)
     
     # One-to-many relationship: CarMake has many CarModels
@@ -34,9 +33,9 @@ class CarModel(db.Model):
     NAME_KEY = "name"
     MAKE_ID_KEY = "make_id"
     
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(32), primary_key=True, default=lambda: uuid.uuid4().hex)
     name = db.Column(db.String(255), nullable=False)
-    make_id = db.Column(db.Integer, db.ForeignKey("car_makes.id"), nullable=False)
+    make_id = db.Column(db.String(32), db.ForeignKey("car_makes.id"), nullable=False)
     
     # Many-to-one relationship: CarModel belongs to CarMake
     make = db.relationship("CarMake", back_populates="models")
@@ -44,7 +43,7 @@ class CarModel(db.Model):
     # One-to-many relationship: CarModel has many CarYears
     years = db.relationship("CarYear", back_populates="model", cascade="all, delete-orphan")
     
-    def __init__(self, name: str, make_id: int):
+    def __init__(self, name: str, make_id: str):
         self.name = name
         self.make_id = make_id
 
@@ -54,8 +53,6 @@ class CarModel(db.Model):
             self.NAME_KEY: self.name,
             self.MAKE_ID_KEY: self.make_id,
         }  
-    
-
 
 class CarYear(db.Model):
     __tablename__ = "car_years"
@@ -67,14 +64,14 @@ class CarYear(db.Model):
     YEAR_KEY = "year"
     MODEL_ID_KEY = "model_id"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(32), primary_key=True, default=lambda: uuid.uuid4().hex)
     year = db.Column(db.Integer, nullable=False)
-    model_id = db.Column(db.Integer, db.ForeignKey("car_models.id"), nullable=False)
+    model_id = db.Column(db.String(32), db.ForeignKey("car_models.id"), nullable=False)
     
     # Many-to-one relationship: CarYear belongs to CarModel
     model = db.relationship("CarModel", back_populates="years")
     
-    def __init__(self, year: int, model_id: int):
+    def __init__(self, year: int, model_id: str):
         self.year = year
         self.model_id = model_id
 

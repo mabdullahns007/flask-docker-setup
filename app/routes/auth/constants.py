@@ -24,4 +24,3 @@ JWT_SUBJECT_KEY = "sub"
 JWT_EMAIL_KEY = "email"
 JWT_ISSUED_AT_KEY = "iat"
 JWT_EXPIRATION_KEY = "exp"
-
