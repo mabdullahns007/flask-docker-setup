@@ -61,29 +61,6 @@ services:
     networks:
       - flask_network
 
-<<<<<<< HEAD
-  celery_worker:
-    build: .
-    command: celery -A make_celery worker --loglevel=info
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - db
-    volumes:
-      - .:/app
-
-  celery_beat:
-    build: .
-    command: celery -A make_celery beat --loglevel=info
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - db
-    volumes:
-      - .:/app
-=======
   worker:
     build: .
     container_name: worker
@@ -127,11 +104,6 @@ services:
     volumes:
       - .:/backendFlask
     depends_on:
-<<<<<<< HEAD
-      - db
-      - redis
->>>>>>> 6cec868 (Migrations for new Models, Celery Integration)
-=======
       db:
         condition: service_healthy
       redis:
@@ -145,9 +117,3 @@ volumes:
 networks:
   flask_network:
     driver: bridge
-<<<<<<< HEAD
-
->>>>>>> 5373901 (docker volumes, networks, innit file simplify, entrypoint script, manual marshmallow schema)
-
-=======
->>>>>>> 7013ca2 (newline at the EOF, remoal of location=json)
